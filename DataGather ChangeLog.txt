@@ -85,6 +85,9 @@ Added a try, except AttributeError to the deleting the graph specific buttons to
 [220818]
 Added manual attenuation lines into the efficiency data gather function. Prompt to block and unblock fibre as neccessary instead of using attenuators automatically.
 
+[280818]
+Removed the +1 to bias check in line 705 to clear error where bias index out of range.
+
 TODO:
 Animate graph (maybe).
 Add IV? - Point to Rob's program. (execfile?)

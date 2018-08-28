@@ -702,7 +702,7 @@ class EfficiencyPage(ttk.Frame):
             writer_csv =  csv.writer(file_handle, delimiter=',')
             writer_csv.writerow(data_to_write)
         self.bias_id += 1
-        if self.bias_id < len(self.biases)+1:    #check doing all points here
+        if self.bias_id < len(self.biases):    #check doing all points here
             controller.measurement_after_id = app.after(1000, self.get_EFF_data, controller)    #wait 1s, go again.
         elif self.bias_id == len(self.biases):
             controller.sim900.write(controller.SIM_slots['VSource'],'OPOF')    #turn bias off before changing attenuations
