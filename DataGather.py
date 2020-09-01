@@ -24,7 +24,7 @@ import os
 import csv
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 from matplotlib import style
 from cycler import cycler
@@ -354,12 +354,14 @@ class DisplayGraphPage(ttk.Frame):
         self.VvT_graph= Figure(figsize=(1,1), dpi=100)
         self.canvas = FigureCanvasTkAgg(self.VvT_graph, self) 
         self.canvas.get_tk_widget().pack(side="bottom", fill="both", expand = True)
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self)
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side="top", fill="both", expand = True)
 
         return_button = ttk.Button(self, text="Return to home", command=lambda: controller.show_frame(StartPage))
         return_button.pack()    #Need to pack as one of the matplotlib funcs uses pack so cannot mix with grid
+        return_button2=ttk.Button(self, text="Go back to measurement choice page", command=lambda: controller.show_frame(MeasTypePage))
+        return_button2.pack()
 
 
     def on_show_graph_page(self, controller):
@@ -616,7 +618,7 @@ class EfficiencyPage(ttk.Frame):
         #open pulse counter    
             controller.PCounter = controller.rm.open_resource(controller.instr_address_dict['pulse_c_address'])
         #setup pulse counter
-            controller.PCounter.write(':INP1:COUP AC;IMP 50 OHM')
+            controller.PCounter.write(':INP1:COUP DC;IMP 50 OHM')
             controller.PCounter.write('SENS:TOT:ARM:STOP:TIM 1')
         #open sim900
             controller.sim900 = SIM900(controller.instr_address_dict['sim900_address'])
@@ -650,7 +652,8 @@ class EfficiencyPage(ttk.Frame):
             self.working_label['text']="No measurement running"
             self.working_label['foreground']='red'
             controller.measurement_after_id = None
-            controller.Op_Attn_1.write(':OUTP:STAT OFF')
+            if controller.manual_atten == False:
+                controller.Op_Attn_1.write(':OUTP:STAT OFF')
         else:
             self.atten = int(self.attens[self.atten_id])
             self.photon_flux = self.calc_photon_flux(self.atten, self.wav, self.ip_pwr)
@@ -703,7 +706,7 @@ class EfficiencyPage(ttk.Frame):
             writer_csv.writerow(data_to_write)
         self.bias_id += 1
         if self.bias_id < len(self.biases):    #check doing all points here
-            controller.measurement_after_id = app.after(1000, self.get_EFF_data, controller)    #wait 1s, go again.
+            controller.measurement_after_id = app.after(1500, self.get_EFF_data, controller)    #wait 1s, go again.
         elif self.bias_id == len(self.biases):
             controller.sim900.write(controller.SIM_slots['VSource'],'OPOF')    #turn bias off before changing attenuations
             self.atten_id += 1
@@ -787,7 +790,7 @@ class DCRPage(ttk.Frame):
         self.bias_r = bias_r
         controller.PCounter = controller.rm.open_resource(controller.instr_address_dict['pulse_c_address'])
         #setup pulse counter
-        controller.PCounter.write(':INP1:COUP AC;IMP 50 OHM')
+        controller.PCounter.write(':INP1:COUP DC;IMP 50 OHM')
         controller.PCounter.write('SENS:TOT:ARM:STOP:TIM 1')
         #open sim900
         controller.sim900 = SIM900(controller.instr_address_dict['sim900_address'])
@@ -814,7 +817,7 @@ class DCRPage(ttk.Frame):
             writer_csv.writerow(data_to_write)
         self.bias_id += 1
         if self.bias_id < len(self.biases):#check doing all points here
-            controller.measurement_after_id = app.after(1000, self.get_DCR_data, controller) #wait 1s, go again.
+            controller.measurement_after_id = app.after(1500, self.get_DCR_data, controller) #wait 1.5s, go again.
         else:
             self.working_label['text']="No measurement running"
             self.working_label['foreground']='red'
